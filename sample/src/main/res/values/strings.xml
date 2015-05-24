@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Android Gesture Utilities</string>
+    <string name="list_by_constellation">Lists of stars by constellation</string>
+    <string name="try_to_swipe">Try to swipe</string>
+</resources>
