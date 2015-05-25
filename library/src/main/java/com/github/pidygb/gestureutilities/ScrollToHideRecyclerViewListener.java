@@ -101,6 +101,7 @@ public class ScrollToHideRecyclerViewListener extends RecyclerView.OnScrollListe
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 mIsScrolling = false;
+                mStartY = 0;
                 break;
         }
         return false;
