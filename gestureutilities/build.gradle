@@ -17,3 +17,4 @@ dependencies {
 }
 
 apply from: 'https://raw.githubusercontent.com/PiDyGB/gradle-bintray-push/master/gradle-bintray-push.gradle'
+
