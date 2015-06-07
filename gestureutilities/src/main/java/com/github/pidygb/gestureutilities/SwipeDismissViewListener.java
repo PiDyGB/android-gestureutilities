@@ -108,7 +108,6 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(final View view, MotionEvent motionEvent) {
-        boolean consumed = false;
         if (mViewWidth < 2) {
             mViewWidth = view.getWidth();
         }
@@ -189,7 +188,6 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
                                     setTranslationX(view, 0);
                                 }
                             });
-                    consumed = true;
                 } else if (mSwiping) {
                     // cancel
                     animate(view)
@@ -235,12 +233,10 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
                     mCallbacks.onDismissStart(view);
                     mDismissCallbackCalled = true;
                 }
-                if (mSwiping)
-                    consumed = true;
                 break;
             }
         }
-        return consumed;
+        return true;
     }
 
     /**
