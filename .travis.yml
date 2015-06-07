@@ -6,8 +6,8 @@ android:
   - extra-android-m2repository
 script: "./gradlew assemble"
 after_success:
-  - mv library/build/outputs/aar/library-release.aar android-gestureutilities-`git tag | head -n 1`.aar
-  - mv sample/build/outputs/apk/sample-debug.apk android-gestureutilities-sample-`git tag | head -n 1`.apk
+  - mv gestureutilities/build/outputs/aar/gestureutilities-release.aar android-gestureutilities-`git tag | tail -n 1`.aar
+  - mv sample/build/outputs/apk/sample-debug.apk android-gestureutilities-sample-`git tag | tail -n 1`.apk
 deploy:
   provider: releases
   api_key:
