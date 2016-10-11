@@ -17,16 +17,13 @@
 package com.github.pidygb.gestureutilities;
 
 import android.content.Context;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorCompat;
+import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorListenerAdapter;
-
-import static com.nineoldandroids.view.ViewHelper.setTranslationX;
-import static com.nineoldandroids.view.ViewPropertyAnimator.animate;
 
 /**
  * A {@link View.OnTouchListener} and a {@link android.support.v7.widget.RecyclerView.OnScrollListener}
@@ -66,7 +63,6 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
     private int mSlop;
     private int mMinFlingVelocity;
     private int mMaxFlingVelocity;
-    private long mAnimationTime;
 
     // Fixed properties
     private OnSwipeDismissListener mCallbacks;
@@ -79,6 +75,8 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
     private VelocityTracker mVelocityTracker;
     private boolean mPaused;
     private boolean mDismissCallbackCalled;
+    private long mDuration;
+    private boolean mDurationSet;
 
     /**
      * Constructs a new swipe-to-dismiss touch listener for the given view.
@@ -92,8 +90,6 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
         mSlop = vc.getScaledTouchSlop();
         mMinFlingVelocity = vc.getScaledMinimumFlingVelocity() * 16;
         mMaxFlingVelocity = vc.getScaledMaximumFlingVelocity();
-        mAnimationTime = context.getResources().getInteger(
-                android.R.integer.config_shortAnimTime);
         mCallbacks = callbacks;
     }
 
@@ -135,11 +131,14 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
 
                 if (mSwiping) {
                     // cancel
-                    animate(view).translationX(0)
-                            .setDuration(mAnimationTime)
-                            .setListener(new AnimatorListenerAdapter() {
+                    ViewPropertyAnimatorCompat animate = ViewCompat.animate(view);
+                    if (mDurationSet) {
+                        animate.setDuration(mDuration);
+                    }
+                    animate.translationX(0)
+                            .setListener(new ViewPropertyAnimatorListenerAdapter() {
                                 @Override
-                                public void onAnimationEnd(Animator animation) {
+                                public void onAnimationEnd(View view) {
                                     mCallbacks.onDismissCancel(view);
                                     mDismissCallbackCalled = false;
                                 }
@@ -175,27 +174,35 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
                 if (dismiss) {
                     // dismiss
                     final boolean finalDismissRight = dismissRight;
-                    animate(view)
-                            .translationX(dismissRight ? mViewWidth : -mViewWidth)
-                            .setDuration(mAnimationTime)
-                            .setListener(new AnimatorListenerAdapter() {
+                    ViewPropertyAnimatorCompat animate = ViewCompat.animate(view);
+                    if (mDurationSet) {
+                        animate.setDuration(mDuration);
+                    }
+                    animate.translationX(dismissRight ? mViewWidth : -mViewWidth)
+                            .setListener(new ViewPropertyAnimatorListenerAdapter() {
                                 @Override
-                                public void onAnimationEnd(Animator animation) {
+                                public void onAnimationEnd(View view) {
 
                                     mCallbacks.onDismissEnd(view, finalDismissRight);
                                     mDismissCallbackCalled = false;
 
-                                    setTranslationX(view, 0);
+                                    ViewPropertyAnimatorCompat animate = ViewCompat.animate(view);
+                                    if (mDurationSet) {
+                                        animate.setDuration(mDuration);
+                                    }
+                                    animate.translationX(0);
                                 }
                             });
                 } else if (mSwiping) {
                     // cancel
-                    animate(view)
-                            .translationX(0)
-                            .setDuration(mAnimationTime)
-                            .setListener(new AnimatorListenerAdapter() {
+                    ViewPropertyAnimatorCompat animate = ViewCompat.animate(view);
+                    if (mDurationSet) {
+                        animate.setDuration(mDuration);
+                    }
+                    animate.translationX(0)
+                            .setListener(new ViewPropertyAnimatorListenerAdapter() {
                                 @Override
-                                public void onAnimationEnd(Animator animation) {
+                                public void onAnimationEnd(View view) {
                                     mCallbacks.onDismissCancel(view);
                                     mDismissCallbackCalled = false;
                                 }
@@ -227,16 +234,25 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
                     cancelEvent.recycle();
                 }
                 if (mSwiping) {
-                    setTranslationX(view, deltaX - mSwipingSlop);
+                    ViewCompat.setTranslationX(view, deltaX - mSwipingSlop);
                 }
                 if (mSwiping && !mDismissCallbackCalled) {
-                    mCallbacks.onDismissStart(view);
+                    mCallbacks.onDismissStart(view, (deltaX > 0));
                     mDismissCallbackCalled = true;
                 }
                 break;
             }
         }
         return true;
+    }
+
+    public void setDuration(long duration) {
+        mDurationSet = true;
+        mDuration = duration;
+    }
+
+    public long getDuration() {
+        return mDuration;
     }
 
     /**
@@ -252,9 +268,10 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
         /**
          * Called to determine whether the user starts the dismiss gesture
          *
-         * @param view The {@link View} to dismiss
+         * @param view         The {@link View} to dismiss
+         * @param dismissRight True if the view is dismissed to right
          */
-        void onDismissStart(View view);
+        void onDismissStart(View view, boolean dismissRight);
 
         /**
          * Called to determine whether the user cancels the dismiss gesture
@@ -267,7 +284,7 @@ public class SwipeDismissViewListener implements View.OnTouchListener {
          * Called when the user has indicated they she would like to dismiss the view
          *
          * @param view         The originating {@link View}.
-         * @param dismissRight True if the view is dimissed to right
+         * @param dismissRight True if the view is dismissed to right
          */
         void onDismissEnd(View view, boolean dismissRight);
     }

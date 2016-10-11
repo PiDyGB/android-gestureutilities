@@ -19,18 +19,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.github.pidygb.gestureutilities.ScrollToHideRecyclerViewListener;
 import com.github.pidygb.gestureutilities.SwipeDismissViewListener;
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorListenerAdapter;
-import com.nineoldandroids.animation.ObjectAnimator;
-import com.nineoldandroids.view.ViewHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,8 +56,8 @@ public class MainActivity extends AppCompatActivity implements ScrollToHideRecyc
             }
 
             @Override
-            public void onDismissStart(View view) {
-
+            public void onDismissStart(View view, boolean dismissRight) {
+                if (BuildConfig.DEBUG) Log.d(MainActivity.class.getSimpleName(), "onDismissStart: " + dismissRight);
             }
 
             @Override
@@ -111,29 +110,27 @@ public class MainActivity extends AppCompatActivity implements ScrollToHideRecyc
             // Calculate the translation y distance
             final float tranY = mButton.getWidth() + ((RelativeLayout.LayoutParams) mButton.getLayoutParams()).bottomMargin;
 
-            ObjectAnimator anim = ObjectAnimator.ofFloat(mButton, "translationY", (show) ? 0 : tranY);
-            anim.addListener(new AnimatorListenerAdapter() {
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mButtonAnimating = false;
-                    // if the request is to hide set the visibility at gone
-                    if (!show)
-                        mButton.setVisibility(View.GONE);
-                    // Clear the animation, otherwise the view is clickable in old android version
-                    mButton.clearAnimation();
-                }
-
-            });
+            ViewCompat.animate(mButton)
+                    .translationY((show) ? 0 : tranY)
+                    .setListener(new ViewPropertyAnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(View view) {
+                            mButtonAnimating = false;
+                            // if the request is to hide set the visibility at gone
+                            if (!show)
+                                mButton.setVisibility(View.GONE);
+                            // Clear the animation, otherwise the view is clickable in old android version
+                            mButton.clearAnimation();
+                        }
+                    });
             // if the request is to show  translate the view to the start position
             // for the show animation
             // (the previous clear animation sets the view to the original position)
             if (show) {
-                ViewHelper.setTranslationY(mButton, tranY);
+                ViewCompat.setTranslationY(mButton, tranY);
                 mButton.setVisibility(View.VISIBLE);
             }
             mButtonAnimating = true;
-            anim.start();
         }
     }
 

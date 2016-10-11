@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -98,8 +99,8 @@ public class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.SimpleView
         }
 
         @Override
-        public void onDismissStart(View view) {
-
+        public void onDismissStart(View view, boolean dismissRight) {
+            if (BuildConfig.DEBUG) Log.d(MainActivity.class.getSimpleName(), "onDismissStart: " + dismissRight);
         }
 
         @Override
